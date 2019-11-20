@@ -1,0 +1,13 @@
+//
+// Copyright (c) 2019 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg
+// GPLv3, see LICENSE
+//
+// @author Fred Neumann <fred.neumann@fau.de>
+// @version $Id$
+//
+
+<!-- language file start -->
+app_settings#:#App Settings
+data_import#:#Data Import
+import_video_dir#:#Video Directory
+import_video_dir_info#:#Server directory from which the video files are taken when the word list is imported. The names of the files must correspond to the names in the import table.

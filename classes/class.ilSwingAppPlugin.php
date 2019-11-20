@@ -15,7 +15,14 @@ class ilSwingAppPlugin extends ilUserInterfaceHookPlugin
     /** @var ilSwingAppConfig */
     protected $config;
 
+    /** @var array ilSwingAppSettings[]  (indexed by obj_id) */
+    protected $settings = [];
 
+
+    /**
+     * Get the name of the plugin
+     * @return string
+     */
 	public function getPluginName()
 	{
 		return "SwingApp";
@@ -25,25 +32,27 @@ class ilSwingAppPlugin extends ilUserInterfaceHookPlugin
     /**
      * Get the data set for an object
      * @param $obj_id
-     * @return ilSwingAppData
+     * @return ilSwingAppSettings
      */
-	public function getData($obj_id)
+	public function getSettings($obj_id)
     {
-        $this->includeClass('class.ilSwingAppData.php');
-        return new ilSwingAppData($this, $obj_id);
+        if (!isset($this->settings[$obj_id])) {
+           $this->includeClass('class.ilSwingAppSettings.php');
+           $this->settings[$obj_id] = new ilSwingAppSettings($obj_id);
+        }
+        return $this->settings[$obj_id];
     }
 
 
     /**
      * Get the plugin configuration
-     * @return ilOERinFormConfig
+     * @return ilSwingAppConfig
      */
     public function getConfig()
     {
-        if (!isset($this->config))
-        {
+        if (!isset($this->config)) {
             $this->includeClass('class.ilSwingAppConfig.php');
-            $this->config = new ilOERinFormConfig($this);
+            $this->config = new ilSwingAppConfig();
         }
         return $this->config;
     }
@@ -91,4 +100,15 @@ class ilSwingAppPlugin extends ilUserInterfaceHookPlugin
 		global $ilUser;
 		$ilUser->writePref($this->getId().'_'.$name, $value);
 	}
+
+
+    /**
+     * Check if the user has administrative access
+     * @return bool
+     */
+    public function hasAdminAccess()
+    {
+       global $DIC;
+        return $DIC->rbac()->system()->checkAccess("visible", SYSTEM_FOLDER_ID);
+    }
 }

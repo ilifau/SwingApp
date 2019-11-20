@@ -1,86 +1,30 @@
 <?php
 // Copyright (c) 2019 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
+require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/SwingApp/classes/class.ilSwingAppBaseData.php');
+
 /**
  * SwingApp plugin config class
  *
  * @author Fred Neumann <fred.neumann@ili.fau.de>
  *
  */
-class ilSwingAppConfig
+class ilSwingAppConfig extends ilSwingAppBaseData
 {
-	/**
-	 * @var ilOERinFormParam[]	$params		parameters: 	name => ilOERinFormParam
-	 */
-	protected $params = array();
-
-	/**
-	 * Constructor.
-	 * @param ilPlugin|string $a_plugin_object
-	 */
-	public function __construct($a_plugin_object = "")
-	{
-		$this->plugin = $a_plugin_object;
-		$this->plugin->includeClass('class.ilSwingAppParam.php');
-
-		/** @var ilSwingAppParam[] $params */
-		$params = array();
-
-        $params[] = ilSwingAppParam::_create(
-            'config_base',
-            $this->plugin->txt('config_base'),
-            $this->plugin->txt('config_base_info'),
-            ilOERinFormParam::TYPE_HEAD,
-            null
-        );
-
-        foreach ($params as $param)
-        {
-            $this->params[$param->name] = $param;
-        }
-        $this->read();
-	}
-
     /**
-     * Get the array of all parameters
-     * @return ilOERinFormParam[]
+     * Initialize the list of Params
      */
-	public function getParams()
+    protected function initParams()
     {
-        return $this->params;
-    }
-
-    /**
-     * Get the value of a named parameter
-     * @param $name
-     * @return  mixed
-     */
-	public function get($name)
-    {
-        if (!isset($this->params[$name]))
-        {
-            return null;
-        }
-        else
-        {
-            return $this->params[$name]->value;
-        }
-    }
-
-    /**
-     * Set the value of the named parameter
-     * @param string $name
-     * @param mixed $value
-     *
-     */
-    public function set($name, $value = null)
-    {
-        $param = $this->params[$name];
-
-        if (isset($param))
-        {
-            $param->setValue($value);
-        }
+        $this->params = [
+            'base_config' => ilSwingAppParam::_create(
+                'base_config',
+                $this->plugin->txt('base_config'),
+                $this->plugin->txt('base_config_info'),
+                ilSwingAppParam::TYPE_HEAD,
+                null
+            )
+        ];
     }
 
 

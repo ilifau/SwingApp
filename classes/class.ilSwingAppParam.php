@@ -3,7 +3,7 @@
 
 
 /**
- * Class ilSwingAppAprm
+ * Class ilSwingAppParam
  */
 class ilSwingAppParam
 {
@@ -16,7 +16,6 @@ class ilSwingAppParam
     const TYPE_INT = 'int';
 	const TYPE_FLOAT = 'float';
 
-
 	/**
 	 * @var string		name of the parameter (should be unique within an evaluation class)
 	 */
@@ -27,12 +26,10 @@ class ilSwingAppParam
      */
 	public $title;
 
-
     /**
      * @var string     description of the parameter
      */
     public $description;
-
 
     /**
 	 * @var string		type of the parameter
@@ -78,11 +75,11 @@ class ilSwingAppParam
             case self::TYPE_TEXT:
                 $this->value = (string) $value;
                 break;
+             case self::TYPE_INT:
+                $this->value = (integer) $value;
+                break;
             case self::TYPE_BOOLEAN:
                 $this->value = (bool) $value;
-                break;
-            case self::TYPE_INT:
-                $this->value = (integer) $value;
                 break;
             case self::TYPE_FLOAT:
                 $this->value = (float) $value;
@@ -93,11 +90,10 @@ class ilSwingAppParam
     /**
      * Get a form item for setting the parameter
      */
-    public function getFormItem()
+    public function getFormItem($postvar)
     {
         $title = $this->title;
         $description = $this->description;
-        $postvar = $this->name;
 
         switch($this->type)
         {
@@ -132,8 +128,38 @@ class ilSwingAppParam
             $item->setInfo($description);
         }
 
-
         return $item;
+    }
+
+    /**
+     * @param ilFormPropertyGUI $item
+     */
+    public function setFromItem($item) {
+        switch($this->type)
+        {
+            case self::TYPE_HEAD:
+                break;
+
+            case self::TYPE_TEXT:
+                /** @var ilTextInputGUI $item */
+                $this->setValue($item->getValue());
+                break;
+
+            case self::TYPE_INT:
+                /** @var ilNumberInputGUI $item */
+                $this->setValue($item->getValue());
+                break;
+
+            case self::TYPE_BOOLEAN:
+                /** @var ilCheckboxInputGUI $item */
+                $this->setValue($item->getChecked());
+
+                break;
+            case self::TYPE_FLOAT:
+                /** @var ilNumberInputGUI $item */
+                $this->setValue($item->getValue());
+                break;
+        }
     }
 
 }

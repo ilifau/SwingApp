@@ -1,11 +1,11 @@
 <?php
-// Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
+// Copyright (c) 2019 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 
 /**
  * Base class for GUIs of the SwingApp plugin
  */
-class ilSwingAppBaseGUI
+abstract class ilSwingAppBaseGUI
 {
 	/** @var  ilAccessHandler $access */
 	protected $access;
@@ -25,12 +25,12 @@ class ilSwingAppBaseGUI
 	/** @var ilTemplate $tpl */
 	protected $tpl;
 
-	/** @var ilOERinFormPlugin $plugin */
+	/** @var ilSwingAppPlugin $plugin */
 	protected $plugin;
 
 
 	/**
-	 * ilOERinFormBaseGUI constructor
+	 * ilSwingAppBaseGUI constructor
 	 */
 	public function __construct()
 	{
@@ -50,10 +50,13 @@ class ilSwingAppBaseGUI
 	/**
 	 * Get the link target for a command using the ui plugin router
 	 * @param string $a_cmd
-	 * @return string
+     * @param string $a_anchor
+     * @param bool $a_async
+     * @return string
 	 */
 	protected function getLinkTarget($a_cmd = '', $a_anchor = '', $a_async = false)
 	{
+	    $this->ctrl->setParameter($this,'ref_id', (int) $_GET['ref_id']);
 		return $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', get_class($this)), $a_cmd, $a_anchor, $a_async);
 	}
 }

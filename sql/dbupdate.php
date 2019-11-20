@@ -54,7 +54,7 @@ if (!$ilDB->tableExists('swingapp_data'))
             'default' => null
         )
     );
-    $ilDB->createTable("swingapp_data", $fields);
-    $ilDB->addPrimaryKey("swingapp_data", array("obj_id", "param_name"));
+    $ilDB->createTable("swingapp_settings", $fields);
+    $ilDB->addPrimaryKey("swingapp_settings", array("obj_id", "param_name"));
 }
 ?>

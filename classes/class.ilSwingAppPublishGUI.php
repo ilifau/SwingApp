@@ -1,7 +1,7 @@
 <?php
-// Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
+// Copyright (c) 2019 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OERinForm/classes/class.ilOERinFormBaseGUI.php');
+require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/SwingApp/classes/class.ilSwingAppBaseGUI.php');
 
 /**
  * GUI for SwingApp publishing functions
@@ -13,121 +13,196 @@ require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
 {
+    /** @var  ilSwingAppConfig $config */
+    protected $config;
 
-	/** @var  int parent object ref_id */
-	protected $parent_ref_id;
+    /** @var  ilSwingAppSettings  $settings*/
+    protected $settings;
 
-	/** @var  string parent object type */
-	protected $parent_type;
-
-	/** @var  string parent gui class */
-	protected $parent_gui_class;
-
-	/** @var  ilObject $parent_obj */
-	protected $parent_obj;
-
-	/** @var  ilOERinFormPublishMD $md_obj */
-	protected $md_obj;
-
-	/**
-	 * constructor.
-	 */
-	public function __construct()
-	{
-		parent::__construct();
-
-		$this->ctrl->saveParameter($this, 'ref_id');
-
-		$this->parent_ref_id = $_GET['ref_id'];
-		$this->parent_type = ilObject::_lookupType($this->parent_ref_id, true);
-		$this->parent_obj = ilObjectFactory::getInstanceByRefId($this->parent_ref_id);
-		$this->parent_gui_class = ilObjectFactory::getClassByType($this->parent_type).'GUI';
-    }
-
-
-	/**
-	* Handles all commands
-	*/
-	public function executeCommand()
-	{
-		$fallback_url = "goto.php?target=".$this->parent_type.'_'.$this->parent_ref_id;
-
-		if (!$this->access->checkAccess('write','', $_GET['ref_id']))
-		{
-            ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
-            $this->ctrl->redirectToURL( $fallback_url);
-		}
-
-		$this->ctrl->saveParameter($this, 'ref_id');
-		$cmd = $this->ctrl->getCmd('showHelp');
-
-		$next_class = $this->ctrl->getNextClass($this);
-
-		switch ($next_class)
-		{
-			default:
-				switch ($cmd)
-				{
-					case "publish":
-						$this->$cmd();
-						break;
-
-					default:
-						ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
-                        $this->ctrl->redirectToURL($fallback_url);
-						break;
-				}
-		}
-
-
-	}
-
-	/**
-	 * Get the plugin object
-	 * @return ilOERinFormPlugin|null
-	 */
-	public function getPlugin()
-	{
-		return $this->plugin;
-	}
+    /** @var ilObjDataCollection $parentObj */
+    protected $parentObj;
 
     /**
-	 * Prepare the test header, tabs etc.
-	 */
-	protected function prepareOutput()
-	{
-		global $DIC;
-
-		/** @var ilLocatorGUI $ilLocator */
-		$ilLocator = $DIC['ilLocator'];
-
-		$ilLocator->addRepositoryItems($this->parent_obj->getRefId());
-		$ilLocator->addItem($this->parent_obj->getTitle(), ilLink::_getLink($this->parent_ref_id, $this->parent_type));
-
-		$this->tpl->getStandardTemplate();
-		$this->tpl->setLocator();
-		$this->tpl->setTitle($this->parent_obj->getPresentationTitle());
-		$this->tpl->setDescription($this->parent_obj->getLongDescription());
-		$this->tpl->setTitleIcon(ilObject::_getIcon('', 'big', $this->parent_type), $this->lng->txt('obj_'.$this->parent_type));
-	}
-
-
-	/**
-	 * Reject the publishing
-	 */
-	public function publish()
-	{
-		ilUtil::sendSuccess($this->plugin->txt('published'), true);
-		$this->returnToParent();
-	}
-
-
-    /**
-     * Return to the parent GUI
+     * Constructor.
      */
-    protected function returnToParent()
+    public function __construct()
     {
-        $this->ctrl->redirectToURL($_GET['return']);
+        parent::__construct();
+
+        $this->parentObj = new ilObjDataCollection($_GET['ref_id'], true);
+
+        $this->config = $this->plugin->getConfig();
+        $this->settings = $this->plugin->getSettings($this->parentObj->getId());
     }
 
+
+    /**
+     * Modify the export tab toolbar
+     */
+    public function modifyExportToolbar()
+    {
+
+        if (empty($this->toolbar->getItems()))
+        {
+            // e.g delete confirmation is shown
+            return;
+        }
+        $this->toolbar->addSeparator();
+
+        if ($this->plugin->hasAdminAccess()) {
+            include_once "Services/UIComponent/Button/classes/class.ilLinkButton.php";
+            $button = ilLinkButton::getInstance();
+            $button->setCaption($this->plugin->txt('app_settings'), false);
+            $button->setUrl($this->getLinkTarget('editSettings'));
+            $this->toolbar->addButtonInstance($button);
+        }
+    }
+
+
+    /**
+     * Handles all commands, default is "show"
+     */
+    public function executeCommand()
+    {
+        if (!$this->access->checkAccess('write','',$this->parentObj->getRefId())) {
+            ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
+            $this->returnToObject();
+        }
+        $this->ctrl->saveParameter($this, 'ref_id');
+
+        $cmd = $this->ctrl->getCmd('editSettings');
+        switch ($cmd)
+        {
+            case "editSettings":
+                $this->checkAdminAccess();
+                $this->prepareOutput();
+                $this->$cmd();
+                break;
+            case "saveSettings":
+            case "cancelSettings":
+                $this->checkAdminAccess();
+                $this->$cmd();
+                break;
+            case "createApp":
+                $this->$cmd();
+                break;
+
+            default:
+                ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
+                $this->returnToObject();
+                break;
+        }
+    }
+
+
+    /**
+     * Prepare the header, tabs etc.
+     */
+    protected function prepareOutput()
+    {
+        global $DIC;
+
+        /** @var ilLocatorGUI $ilLocator */
+        $ilLocator = $DIC['ilLocator'];
+
+        $this->ctrl->setParameterByClass('ilObjDataCollectionGUI', 'ref_id',  $this->parentObj->getRefId());
+        $ilLocator->addRepositoryItems($this->parentObj->getRefId());
+        $ilLocator->addItem($this->parentObj->getTitle(),$this->ctrl->getLinkTargetByClass(['ilRepositoryGUI', 'ilObjDataCollectionGUI']));
+
+        $this->tpl->getStandardTemplate();
+        $this->tpl->setLocator();
+        $this->tpl->setTitle($this->parentObj->getPresentationTitle());
+        $this->tpl->setDescription($this->parentObj->getLongDescription());
+        $this->tpl->setTitleIcon(ilObject::_getIcon('', 'big', 'dcl'), $this->lng->txt('obj_dcl'));
+
+        return true;
+    }
+
+    /**
+     * Init the settings form
+     */
+    protected function initSettingsForm()
+    {
+        require_once('Services/Form/classes/class.ilPropertyFormGUI.php');
+        $form = new ilPropertyFormGUI();
+        $form->setFormAction($this->ctrl->getFormAction($this, 'editSettings'));
+
+        $this->settings->addFormItems($form);
+
+        $form->addCommandButton('saveSettings', $this->lng->txt('save'));
+        $form->addCommandButton('cancelSettings', $this->lng->txt('cancel'));
+
+        return $form;
+    }
+
+
+    /**
+     * Edit the archive settings
+     */
+    protected function editSettings()
+    {
+        $form = $this->initSettingsForm();
+        $this->tpl->setContent($form->getHTML());
+        $this->tpl->show();
+    }
+
+
+    /**
+     * Save the archive settings
+     */
+    protected function saveSettings()
+    {
+        $form = $this->initSettingsForm();
+        if (!$form->checkInput())
+        {
+            $form->setValuesByPost();
+            $this->prepareOutput();
+            $this->tpl->setContent($form->getHTML());
+            $this->tpl->show();
+            return;
+        }
+
+        $this->settings->setValuesFromForm($form);
+        $this->settings->write();
+
+        ilUtil::sendSuccess($this->lng->txt('settings_saved'), true);
+        $this->returnToExport();
+    }
+
+
+    /**
+     * Cancel the archive settings
+     */
+    protected function cancelSettings()
+    {
+        $this->returnToExport();
+    }
+
+    /**
+     * Check if the user has admin access and retorn with an error if not
+     */
+    public function checkAdminAccess()
+    {
+        if (!$this->plugin->hasAdminAccess()) {
+            ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
+            $this->returnToObject();
+        }
+    }
+
+    /**
+     * Return to the export screen of the parent object
+     */
+    protected function returnToExport()
+    {
+        $this->ctrl->setParameterByClass('ilDclExportGUI', 'ref_id', $this->parentObj->getRefId());
+        $this->ctrl->redirectByClass(array('ilRepositoryGUI','ilObjDataCollectionGUI', 'ilDclExportGUI'));
+    }
+
+    /**
+     * Return to the user view of the parent object
+     */
+    public function returnToObject()
+    {
+        $this->ctrl->redirectToURL("goto.php?target=tst_".$this->parentObj->getRefId());
+    }
 }

@@ -1,9 +1,6 @@
 <?php
 // Copyright (c) 2019 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-
-include_once("./Services/UIComponent/classes/class.ilSwingAppPluginGUI.php");
-
 /**
  * User interface hook class
  *
@@ -17,7 +14,7 @@ class ilSwingAppUIHookGUI extends ilUIHookPluginGUI
 	/** @var ilTabsGUI $tabs */
 	protected $tabs;
 
-	/** @var  ilOERinFormPlugin $plugin_object */
+	/** @var  ilSwingAppPlugin $plugin_object */
 	protected $plugin_object;
 
 	/**
@@ -40,16 +37,16 @@ class ilSwingAppUIHookGUI extends ilUIHookPluginGUI
 				$this->tabs = $DIC->tabs();
 
 				// Standard meta data editor is shown
-				if ($this->ctrl->getCmdClass() == 'ilexportgui')
+				if ($this->ctrl->getCmdClass() == 'ildclexportgui')
 				{
-					//$this->saveTabs('ilexportgui');
+					$this->saveTabs('ildclexportgui');
 					$this->modifyExport();
 				}
 
-				 // OER publishing page is shown
+				 // publishing page is shown
 				if (in_array($this->ctrl->getCmdClass(), array('ilswingapppublishgui')))
 				{
-					//$this->restoreTabs('ilexportgui');
+					$this->restoreTabs('ildclexportgui');
 				}
 
 				break;
@@ -85,11 +82,11 @@ class ilSwingAppUIHookGUI extends ilUIHookPluginGUI
 			$this->tabs->sub_target = $_SESSION['SwingApp'][$a_context]['TabSubTarget'];
 		}
 
-		if ($a_context == 'ilexportgui')
+		if ($a_context == 'ildclexportgui')
 		{
 			foreach ($this->tabs->target as $td)
 			{
-				if (strpos(strtolower($td['link']),'ilexportgui') !== false)
+				if (strpos(strtolower($td['link']),'ildclexportgui') !== false)
 				{
 					// this works when done in handler for the sub_tabs
 					// because the tabs are rendered after the sub tabs
@@ -100,7 +97,7 @@ class ilSwingAppUIHookGUI extends ilUIHookPluginGUI
 	}
 
     /**
-     * Check if OER function is allowed
+     * Check if function is allowed
      * @return bool
      */
 	protected function isAllowed()
@@ -117,8 +114,8 @@ class ilSwingAppUIHookGUI extends ilUIHookPluginGUI
 	    if ($this->isAllowed())
         {
             $this->plugin_object->includeClass('class.ilSwingAppPublishGUI.php');
-            $gui = new ilOERinFormPublishGUI();
-            $gui->addPublishInfo();
+            $gui = new ilSwingAppPublishGUI();
+            $gui->modifyExportToolbar();
         }
 	}
 }
