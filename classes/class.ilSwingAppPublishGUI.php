@@ -162,6 +162,7 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
             return;
         }
 
+        $form->setValuesByPost();
         $this->settings->setValuesFromForm($form);
         $this->settings->write();
 
