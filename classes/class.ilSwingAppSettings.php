@@ -40,9 +40,9 @@ class ilSwingAppSettings extends ilSwingAppBaseData
         ));
 
         $this->addParam( ilSwingAppParam::_create(
-            'import_video_dir',
-            $this->plugin->txt('import_video_dir'),
-            $this->plugin->txt('import_video_dir_info'),
+            'media_import_dir',
+            $this->plugin->txt('media_import_dir'),
+            $this->plugin->txt('media_import_dir_info'),
             ilSwingAppParam::TYPE_TEXT,
             ''
         ));
