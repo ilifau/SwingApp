@@ -14,7 +14,7 @@ abstract class ilSwingAppBaseData
 	/**
 	 * @var ilSwingAppParam[]	$params		name => ilSwingAppParam
 	 */
-	private $params = [];
+	protected $params = [];
 
     /**
      * @var ilSwingAppPlugin
