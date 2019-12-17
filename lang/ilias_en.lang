@@ -11,6 +11,5 @@ app_settings#:#App Settings
 data_import#:#Data Import
 media_import_dir#:#Media Directory
 media_import_dir_info#:#Server directory from which the media files are taken when the word list is imported. The names of the files must correspond to the names in the import table.
-create_app#:#Create App
-app_created#:#A new version of the App is created.
-start_app#:#Start App
+export_content#:#Export App Content
+content_exported#:#The app content is exported.

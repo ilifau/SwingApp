@@ -57,14 +57,8 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
         }
 
         $button = ilLinkButton::getInstance();
-        $button->setCaption($this->plugin->txt('create_app'), false);
-        $button->setUrl($this->getLinkTarget('createApp'));
-        $this->toolbar->addButtonInstance($button);
-
-        $button = ilLinkButton::getInstance();
-        $button->setCaption($this->plugin->txt('start_app'), false);
-        $button->setTarget('_blank');
-        $button->setUrl('https://creator.ionic.io/share/2c6cd2fda95e');
+        $button->setCaption($this->plugin->txt('export_content'), false);
+        $button->setUrl($this->getLinkTarget('exportContent'));
         $this->toolbar->addButtonInstance($button);
     }
 
@@ -93,7 +87,7 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
                 $this->checkAdminAccess();
                 $this->$cmd();
                 break;
-            case "createApp":
+            case "exportContent":
                 $this->$cmd();
                 break;
 
@@ -189,36 +183,17 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
         $this->returnToExport();
     }
 
-    public function createApp()
+    /**
+     * Export the content
+     * @throws ilDateTimeException
+     */
+    public function exportContent()
     {
-        $a_id = $this->parentObj->getId();
-        $a_type = 'dcl';
-        $v = explode(".", ILIAS_VERSION_NUMERIC);
-        $a_target_release = $v[0].".".$v[1].".0";
-        $ts = time();
+        $this->plugin->includeClass('class.ilSwingAppPublish.php');
+        $publisher = new ilSwingAppPublish($this->parentObj);
+        $publisher->buildContent();
 
-        ilExport::_createExportDirectory($a_id, "xml", $a_type);
-        $export_dir = ilExport::_getExportDirectory($a_id, "xml", $a_type);
-
-        $sub_dir = $ts.'__'.IL_INST_ID.'__xml_'.$this->parentObj->getId();
-        $new_file = $ts.'__'.IL_INST_ID.'__app_'.$this->parentObj->getId().'.zip';
-
-        $export_run_dir = $export_dir."/".$sub_dir;
-        ilUtil::makeDirParents($export_run_dir);
-
-        ilUtil::rCopy($this->plugin->getDirectory() . '/apps/demoApp/www', $export_run_dir);
-
-        $exp = new ilExportFileInfo($a_id);
-        $exp->setVersion($a_target_release);
-        $exp->setCreationDate(new ilDateTime($ts,IL_CAL_UNIX));
-        $exp->setExportType('app');
-        $exp->setFilename($new_file);
-        $exp->create();
-
-        ilUtil::zip($export_run_dir, $export_dir."/".$new_file);
-        ilUtil::delDir($export_run_dir);
-
-        ilUtil::sendSuccess($this->plugin->txt("app_created"), true);
+        ilUtil::sendSuccess($this->plugin->txt("content_exported"), true);
         $this->returnToExport();
     }
 
