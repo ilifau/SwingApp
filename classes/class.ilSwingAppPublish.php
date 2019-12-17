@@ -9,20 +9,14 @@
  */
 class ilSwingAppPublish
 {
-	/**
-	 * @var ilSwingAppParam[]	$params		name => ilSwingAppParam
-	 */
+
     /** @var ilObjDataCollection $object */
     protected $object;
 
-    /**
-     * @var ilSwingAppPlugin
-     */
+    /** @var ilSwingAppPlugin */
 	protected $plugin;
 
-    /**
-     * @var
-     */
+    /** @var string */
 	protected $directory;
 
 
@@ -48,14 +42,25 @@ class ilSwingAppPublish
         ilUtil::delDir($this->directory, true);
 
         ilUtil::makeDirParents($this->directory. '/data');
-        $texts = $this->getGeneralTexts();
+        ilUtil::makeDirParents($this->directory. '/pictures');
+        ilUtil::makeDirParents($this->directory. '/videos');
+
+        $texts = json_encode($this->exportGeneralTexts(), JSON_PRETTY_PRINT);
         file_put_contents($this->directory.'/data/texts.json', $texts);
+
+        $media = json_encode($this->exportGeneralMedia(), JSON_PRETTY_PRINT);
+        file_put_contents($this->directory.'/data/media.json', $media);
+
+
 
         $this->packContent();
     }
 
-
-    protected function getGeneralTexts()
+    /**
+     * Get the table content of GeneralTexts
+     * @return array
+     */
+    protected function exportGeneralTexts()
     {
         $tableId = ilDclTable::_getTableIdByTitle('GeneralTexts', $this->object->getId());
         $table = $this->object->getTableById($tableId);
@@ -73,7 +78,84 @@ class ilSwingAppPublish
             $texts[$key] = $value;
         }
 
-        return json_encode($texts, JSON_PRETTY_PRINT);
+        return $texts;
+    }
+
+    /**
+     * Get the table content of GeneralMedia
+     * @return array
+     */
+    protected function exportGeneralMedia()
+    {
+        $tableId = ilDclTable::_getTableIdByTitle('GeneralMedia', $this->object->getId());
+        $table = $this->object->getTableById($tableId);
+
+        $keyField = $table->getFieldByTitle('Identifier');
+        $valueField = $table->getFieldByTitle('Medium');
+
+        $list = $table->getPartialRecords('Identifier', "asc", null, 0, []);
+
+        $media = [];
+        /** @var ilDclBaseRecordModel $record */
+        foreach ($list['records'] as $record) {
+            $id = $record->getId();
+            $key = $record->getRecordField($keyField->getId())->getExportValue();
+
+            $mob_Id = $record->getRecordField($valueField->getId())->getValue();
+            $files = $this->exportMob($mob_Id, 'medium'.$id);
+            $media[$key] = $files;
+        }
+
+        return $media;
+    }
+
+    /**
+     * Export media object content and return the file name
+     * @param int $mob_id
+     * @param string target filename (without extension)
+     * @return array
+     */
+    protected function exportMob($mob_id, $filename)
+    {
+        $files = [
+            'standard' => '',
+            'preview' => ''
+        ];
+
+        if ($mob = new ilObjMediaObject($mob_id)) {
+            $mobdir = ilObjMediaObject::_getDirectory($mob->getId());
+
+
+            if ($med = $mob->getMediaItem('Standard')) {
+                if (in_array($med->getSuffix(), array('jpg', 'jpeg', 'png', 'gif'))) {
+                    $subdir = "pictures";
+                }
+                else {
+                    $subdir = "videos";
+                }
+
+                $sourcefile = $mobdir . "/" . $med->getLocation();
+                $pathinfo = pathinfo($sourcefile);
+                $extension = $pathinfo['extension'];
+
+                $path = $subdir . '/' . $filename . '.'. strtolower($extension);
+                $files['standard'] = $path;
+                copy($mobdir . "/" . $med->getLocation(), $this->directory . '/' . $path);
+
+
+                if ($mob->getVideoPreviewPic()) {
+                    $previewfile = $mob->getVideoPreviewPic();
+                    $pathinfo = pathinfo($previewfile);
+                    $extension = $pathinfo['extension'];
+
+                    $path = $subdir . '/' . $filename . '_preview.'. strtolower($extension);
+                    $files['preview'] = $path;
+                    copy($mob->getVideoPreviewPic(), $this->directory . '/' . $path);
+                }
+            }
+        }
+
+        return $files;
     }
 
     /**
