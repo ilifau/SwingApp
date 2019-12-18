@@ -51,7 +51,11 @@ class ilSwingAppPublish
         $media = json_encode($this->exportGeneralMedia(), JSON_PRETTY_PRINT);
         file_put_contents($this->directory.'/data/media.json', $media);
 
-
+        $dictionary = [];
+        $dictionary['modules'] = $this->exportModules();
+        $dictionary['units'] = $this->exportUnits();
+        $dictionary['words'] = $this->exportWords();
+        file_put_contents($this->directory.'/data/dictionary.json', json_encode($dictionary, JSON_PRETTY_PRINT));
 
         $this->packContent();
     }
@@ -75,7 +79,7 @@ class ilSwingAppPublish
         foreach ($list['records'] as $record) {
             $key = $record->getRecordField($keyField->getId())->getExportValue();
             $value = $record->getRecordField($valueField->getId())->getExportValue();
-            $texts[$key] = $value;
+            $texts[$key] = $this->applyMarkup($value);
         }
 
         return $texts;
@@ -110,6 +114,199 @@ class ilSwingAppPublish
     }
 
     /**
+     * Get the table content of TrainingModules
+     * @return array
+     */
+    protected function exportModules()
+    {
+        $tableId = ilDclTable::_getTableIdByTitle('TrainingModules', $this->object->getId());
+        $table = $this->object->getTableById($tableId);
+        $list = $table->getPartialRecords('Name', "asc", null, 0, []);
+
+        $modules = [];
+        /** @var ilDclBaseRecordModel $record */
+        foreach ($list['records'] as $record) {
+            $id = $record->getId();
+            $module = [
+                'id' => $id,
+                'name' => '',
+                'description' => '',
+                'videoName' => '',
+                'videoDesc' => '',
+                'videoNameStart' => '',
+                'videoDescStart' => ''
+            ];
+
+            /** @var ilDclBaseFieldModel $field */
+            foreach ($table->getFields() as $field) {
+                $recField = $record->getRecordField($field->getId());
+                switch ($field->getTitle()) {
+                    case 'Name':
+                        $module['name'] = $this->trimPrefix($recField->getExportValue());
+                        break;
+                    case 'Description':
+                        $module['description'] = $recField->getExportValue();
+                        break;
+                    case 'Video':
+                        $files = $this->exportMob($recField->getValue(), 'unit' . $id . '_name');
+                        $module['videoName'] = $files['standard'];
+                        $module['videoNameStart'] = $files['preview'];
+                        break;
+                    case 'VideoDescription':
+                        $files = $this->exportMob($recField->getValue(), 'unit' . $id . '_desc');
+                        $module['videoDesc'] = $files['standard'];
+                        $module['videoDescStart'] = $files['preview'];
+                        break;
+                }
+            }
+            $modules[] = $module;
+        }
+        return $modules;
+    }
+
+    /**
+     * Get the table content of TrainingUnits
+     * @return array
+     */
+    protected function exportUnits()
+    {
+        $tableId = ilDclTable::_getTableIdByTitle('TrainingUnits', $this->object->getId());
+        $table = $this->object->getTableById($tableId);
+        $list = $table->getPartialRecords('Name', "asc", null, 0, []);
+
+        $units = [];
+        /** @var ilDclBaseRecordModel $record */
+        foreach ($list['records'] as $record) {
+            $id = $record->getId();
+            $unit = [
+                'id' => $id,
+                'name' => '',
+                'description' => '',
+                'module' => '',
+                'videoName' => '',
+                'videoDesc' => '',
+                'videoNameStart' => '',
+                'videoDescStart' => ''
+            ];
+
+            /** @var ilDclBaseFieldModel $field */
+            foreach ($table->getFields() as $field) {
+                $recField = $record->getRecordField($field->getId());
+                switch ($field->getTitle()) {
+                    case 'Name':
+                        $unit['name'] = $this->trimPrefix($recField->getExportValue());
+                        break;
+                    case 'Description':
+                        $unit['description'] = $recField->getExportValue();
+                        break;
+                    case 'TrainingModule':
+                        $unit['module'] = $recField->getValue();
+                        break;
+                    case 'Video':
+                        $files = $this->exportMob($recField->getValue(), 'module' . $id . '_name');
+                        $unit['videoName'] = $files['standard'];
+                        $unit['videoNameStart'] = $files['preview'];
+                        break;
+                    case 'VideoDescription':
+                        $files = $this->exportMob($recField->getValue(), 'module' . $id . '_desc');
+                        $unit['videoDesc'] = $files['standard'];
+                        $unit['videoDescStart'] = $files['preview'];
+                        break;
+                }
+            }
+            $units[] = $unit;
+        }
+        return $units;
+    }
+
+
+    /**
+     * Get the table content of TrainingUnits
+     * @return array
+     */
+    protected function exportWords()
+    {
+        $tableId = ilDclTable::_getTableIdByTitle('Words', $this->object->getId());
+        $table = $this->object->getTableById($tableId);
+        $list = $table->getPartialRecords('Number', "asc", null, 0, []);
+
+        $words = [];
+        /** @var ilDclBaseRecordModel $record */
+        foreach ($list['records'] as $record) {
+            $id = $record->getId();
+            $word = [
+                'id' => $id,
+                'number' => '',
+                'name' => '',
+                'description' => '',
+                'synonyms' => '',
+                'units' => [],
+                'videoName' => '',
+                'videoDesc' => '',
+                'videoNameStart' => '',
+                'videoDescStart' => '',
+                'img1' => '',
+                'img2' => '',
+                'img1Source' => '',
+                'img2Source' => '',
+                'relatedWords' => []
+            ];
+
+            /** @var ilDclBaseFieldModel $field */
+            foreach ($table->getFields() as $field) {
+                $recField = $record->getRecordField($field->getId());
+                switch ($field->getTitle()) {
+                    case 'Name':
+                        $word['name'] = $recField->getExportValue();
+                        break;
+                    case 'Number':
+                        $word['name'] = $recField->getExportValue();
+                        break;
+                    case 'Description':
+                        $word['description'] = $recField->getExportValue();
+                        break;
+                    case 'Synonyms':
+                        $word['synonyms'] = $recField->getExportValue();
+                        break;
+                    case 'TrainingUnits':
+                        $word['units'] = $recField->getValue();
+                        break;
+                    case 'Video':
+                        $files = $this->exportMob($recField->getValue(), 'word' . $id . '_name');
+                        $word   ['videoName'] = $files['standard'];
+                        $word['videoNameStart'] = $files['preview'];
+                        break;
+                    case 'VideoDescription':
+                        $files = $this->exportMob($recField->getValue(), 'word' . $id . '_desc');
+                        $word['videoDesc'] = $files['standard'];
+                        $word['videoDescStart'] = $files['preview'];
+                        break;
+                    case 'Img1':
+                        $files = $this->exportMob($recField->getValue(), 'word' . $id . '_img1');
+                        $word['img1'] = $files['standard'];
+                        break;
+                    case 'Img2':
+                        $files = $this->exportMob($recField->getValue(), 'word' . $id . '_img2');
+                        $word['img2'] = $files['standard'];
+                        break;
+                    case 'Img1-Source':
+                        $word['img1Source'] = $recField->getExportValue();
+                        break;
+                    case 'Img2-Source':
+                        $word['img2Source'] = $recField->getExportValue();
+                        break;
+                    case 'RelatedWords':
+                        $word['relatedWords'] = $recField->getValue();
+                        break;
+                }
+            }
+            $words[] = $word;
+        }
+        return $words;
+    }
+
+
+    /**
      * Export media object content and return the file name
      * @param int $mob_id
      * @param string target filename (without extension)
@@ -139,23 +336,45 @@ class ilSwingAppPublish
                 $extension = $pathinfo['extension'];
 
                 $path = $subdir . '/' . $filename . '.'. strtolower($extension);
-                $files['standard'] = $path;
-                copy($mobdir . "/" . $med->getLocation(), $this->directory . '/' . $path);
-
+                if (is_file($sourcefile)) {
+                    $files['standard'] = $path;
+                    copy($sourcefile, $this->directory . '/' . $path);
+                }
 
                 if ($mob->getVideoPreviewPic()) {
                     $previewfile = $mob->getVideoPreviewPic();
                     $pathinfo = pathinfo($previewfile);
                     $extension = $pathinfo['extension'];
 
-                    $path = $subdir . '/' . $filename . '_preview.'. strtolower($extension);
-                    $files['preview'] = $path;
-                    copy($mob->getVideoPreviewPic(), $this->directory . '/' . $path);
+                    $path = $subdir . '/' . $filename . '_start.'. strtolower($extension);
+                    if (is_file($previewfile)) {
+                        $files['preview'] = $path;
+                        copy($previewfile, $this->directory . '/' . $path);
+                    }
                 }
             }
         }
 
         return $files;
+    }
+
+    /**
+     * Cut the numeric prefix from a string
+     * @param $text
+     * @return string|string[]|null
+     */
+    protected function trimPrefix($text) {
+        return preg_replace('/^[0-9\. ]+/', '', $text);
+    }
+
+    /**
+     * Apply little markup to a text
+     * @param $text
+     * @return string|string[]|null
+     */
+    protected function applyMarkup($text) {
+        $text = nl2br($text);
+        return preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $text);
     }
 
     /**
