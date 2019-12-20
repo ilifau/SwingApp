@@ -107,7 +107,8 @@ class ilSwingAppPublish
 
             $mob_Id = $record->getRecordField($valueField->getId())->getValue();
             $files = $this->exportMob($mob_Id, 'medium'.$id);
-            $media[$key] = $files;
+            $media[$key] = $files['standard'];
+            $media[$key.'Start'] = $files['preview'];
         }
 
         return $media;
@@ -269,7 +270,7 @@ class ilSwingAppPublish
                         $word['synonyms'] = $recField->getExportValue();
                         break;
                     case 'TrainingUnits':
-                        $word['units'] = $recField->getValue();
+                        $word['units'] = (array) $recField->getValue();
                         break;
                     case 'Video':
                         $files = $this->exportMob($recField->getValue(), 'word' . $id . '_name');
@@ -296,7 +297,7 @@ class ilSwingAppPublish
                         $word['img2Source'] = $recField->getExportValue();
                         break;
                     case 'RelatedWords':
-                        $word['relatedWords'] = $recField->getValue();
+                        $word['relatedWords'] = (array) $recField->getValue();
                         break;
                 }
             }
@@ -373,7 +374,7 @@ class ilSwingAppPublish
      * @return string|string[]|null
      */
     protected function applyMarkup($text) {
-        $text = nl2br($text);
+        $text = nl2br(trim($text));
         return preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $text);
     }
 
