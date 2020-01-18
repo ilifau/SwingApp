@@ -382,7 +382,7 @@ class ilSwingAppPublish
      * Create a zip file with the content ald list it on the export page
      * @throws ilDateTimeException
      */
-    protected function packContent()
+    public function packContent()
     {
         $ts = time();
         $v = explode(".", ILIAS_VERSION_NUMERIC);
@@ -393,7 +393,7 @@ class ilSwingAppPublish
 
         $new_file = $ts.'__'.IL_INST_ID.'__app_'.$this->object->getId().'.zip';
 
-        ilUtil::zip($this->directory, $export_dir."/".$new_file);
+        ilUtil::zip($this->directory, $export_dir."/".$new_file, true);
 
         $exp = new ilExportFileInfo($this->object->getId());
         $exp->setVersion($version);

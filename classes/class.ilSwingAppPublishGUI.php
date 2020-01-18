@@ -194,6 +194,7 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
         $this->plugin->includeClass('class.ilSwingAppPublish.php');
         $publisher = new ilSwingAppPublish($this->parentObj);
         $publisher->buildContent();
+        $publisher->packContent();
 
         ilUtil::sendSuccess($this->plugin->txt("content_exported"), true);
         $this->returnToExport();
