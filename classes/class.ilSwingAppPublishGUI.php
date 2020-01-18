@@ -1,7 +1,7 @@
 <?php
 // Copyright (c) 2019 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/SwingApp/classes/class.ilSwingAppBaseGUI.php');
+require_once(__DIR__ . '/class.ilSwingAppBaseGUI.php');
 
 /**
  * GUI for SwingApp publishing functions
@@ -166,7 +166,9 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
             return;
         }
 
+        // needed again because initConfigForm will set the saved values to the form
         $form->setValuesByPost();
+
         $this->settings->setValuesFromForm($form);
         $this->settings->write();
 

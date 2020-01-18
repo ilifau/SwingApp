@@ -1,7 +1,7 @@
 <?php
 // Copyright (c) 2018 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/SwingApp/classes/class.ilSwingAppBaseData.php');
+require_once(__DIR__ . '/class.ilSwingAppBaseData.php');
 
 /**
  * SwingApp plugin settings class
@@ -31,21 +31,30 @@ class ilSwingAppSettings extends ilSwingAppBaseData
      */
     protected function initParams()
     {
-        $this->addParam(ilSwingAppParam::_create(
-            'data_import',
-            $this->plugin->txt('data_import'),
+        $this->addParam( ilSwingAppParam::_create(
+            'publish_settings',
+            $this->plugin->txt('publish_settings'),
             '',
             ilSwingAppParam::TYPE_HEAD,
+            null
+        ));
+
+        $this->addParam( ilSwingAppParam::_create(
+            'publish_dir',
+            $this->plugin->txt('publish_dir'),
+            $this->plugin->txt('publish_dir_info'),
+            ilSwingAppParam::TYPE_TEXT,
             ''
         ));
 
         $this->addParam( ilSwingAppParam::_create(
-            'media_import_dir',
-            $this->plugin->txt('media_import_dir'),
-            $this->plugin->txt('media_import_dir_info'),
+            'publish_url',
+            $this->plugin->txt('publish_url'),
+            $this->plugin->txt('publish_url_info'),
             ilSwingAppParam::TYPE_TEXT,
             ''
         ));
+
     }
 
     /**

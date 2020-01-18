@@ -8,8 +8,20 @@
 
 <!-- language file start -->
 app_settings#:#App Settings
-data_import#:#Data Import
-media_import_dir#:#Media Directory
-media_import_dir_info#:#Server directory from which the media files are taken when the word list is imported. The names of the files must correspond to the names in the import table.
 export_content#:#Export App Content
 content_exported#:#The app content is exported.
+base_config#:#Base Configuration
+build_command#:#Build Command
+build_command_info#:#Shell command with parameters that is called for building the app
+build_base_dir#:#Base Directory for Build
+build_base_dir_info#:#Directory in which the build command is executed. The web server must have full permissions on this directory and contents
+build_content_dir#:#Content Directory for Build
+build_content_dir_info#:#Directory to which the content of the data collection is copied for the generation process of the app
+build_result_dir#:#Result Directory of Build
+build_result_dir_info#:#Directory in which the compiled app content is available after the build process
+settings_saved#:#The settings are saved..
+publish_settings#:#Publication Setings
+publish_dir#:#Target Directory
+publish_dir_info#:#Directory to which the generated app is copied
+publish_url#:#Address
+publish_url_info#:#Web address of the published app

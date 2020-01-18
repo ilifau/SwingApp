@@ -1,7 +1,7 @@
 <?php
 // Copyright (c) 2019 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/SwingApp/classes/class.ilSwingAppParam.php');
+require_once(__DIR__ . '/class.ilSwingAppParam.php');
 
 /**
  * Base class for data (config and settings)
@@ -14,7 +14,7 @@ abstract class ilSwingAppBaseData
 	/**
 	 * @var ilSwingAppParam[]	$params		name => ilSwingAppParam
 	 */
-	protected $params = [];
+	private $params = [];
 
     /**
      * @var ilSwingAppPlugin

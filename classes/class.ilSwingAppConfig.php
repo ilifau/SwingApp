@@ -1,7 +1,7 @@
 <?php
 // Copyright (c) 2019 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/SwingApp/classes/class.ilSwingAppBaseData.php');
+require_once(__DIR__ . '/class.ilSwingAppBaseData.php');
 
 /**
  * SwingApp plugin config class
@@ -16,15 +16,46 @@ class ilSwingAppConfig extends ilSwingAppBaseData
      */
     protected function initParams()
     {
-        $this->params = [
-            'base_config' => ilSwingAppParam::_create(
-                'base_config',
-                $this->plugin->txt('base_config'),
-                $this->plugin->txt('base_config_info'),
-                ilSwingAppParam::TYPE_HEAD,
-                null
-            )
-        ];
+        $this->addParam( ilSwingAppParam::_create(
+            'base_config',
+            $this->plugin->txt('base_config'),
+            '',
+            ilSwingAppParam::TYPE_HEAD,
+            null
+        ));
+
+        $this->addParam( ilSwingAppParam::_create(
+            'build_command',
+            $this->plugin->txt('build_command'),
+            $this->plugin->txt('build_command_info'),
+            ilSwingAppParam::TYPE_TEXT,
+            ''
+        ));
+
+        $this->addParam( ilSwingAppParam::_create(
+            'build_base_dir',
+            $this->plugin->txt('build_base_dir'),
+            $this->plugin->txt('build_base_dir_info'),
+            ilSwingAppParam::TYPE_TEXT,
+            ''
+        ));
+
+        $this->addParam( ilSwingAppParam::_create(
+            'build_content_dir',
+            $this->plugin->txt('build_content_dir'),
+            $this->plugin->txt('build_content_dir_info'),
+            ilSwingAppParam::TYPE_TEXT,
+            ''
+        ));
+
+        $this->addParam( ilSwingAppParam::_create(
+            'build_result_dir',
+            $this->plugin->txt('build_result_dir'),
+            $this->plugin->txt('build_result_dir_info'),
+            ilSwingAppParam::TYPE_TEXT,
+            ''
+        ));
+
     }
 
 
@@ -52,7 +83,7 @@ class ilSwingAppConfig extends ilSwingAppBaseData
         global $DIC;
         $ilDB = $DIC->database();
 
-        foreach ($this->params as $param)
+        foreach ($this->getParams() as $param)
         {
             $ilDB->replace('swingapp_config',
                 array('param_name' => array('text', $param->name)),
