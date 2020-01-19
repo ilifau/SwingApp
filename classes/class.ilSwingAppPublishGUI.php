@@ -49,6 +49,14 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
         }
         $this->toolbar->addSeparator();
 
+
+        $button = ilLinkButton::getInstance();
+        $button->setCaption($this->plugin->txt('export_content'), false);
+        $button->setUrl($this->getLinkTarget('exportContent'));
+        $this->toolbar->addButtonInstance($button);
+
+        $this->toolbar->addSeparator();
+
         if ($this->plugin->hasAdminAccess()) {
             $button = ilLinkButton::getInstance();
             $button->setCaption($this->plugin->txt('app_settings'), false);
@@ -56,10 +64,22 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
             $this->toolbar->addButtonInstance($button);
         }
 
-        $button = ilLinkButton::getInstance();
-        $button->setCaption($this->plugin->txt('export_content'), false);
-        $button->setUrl($this->getLinkTarget('exportContent'));
-        $this->toolbar->addButtonInstance($button);
+        if ($this->plugin->isBuildPossible()) {
+            $button = ilLinkButton::getInstance();
+            $button->setCaption($this->plugin->txt('update_app'), false);
+            $button->setUrl($this->getLinkTarget('updateApp'));
+            $this->toolbar->addButtonInstance($button);
+        }
+
+        $this->toolbar->addSeparator();
+
+        if (!empty($this->settings->get('publish_url'))) {
+            $button = ilLinkButton::getInstance();
+            $button->setCaption($this->plugin->txt('open_app'), false);
+            $button->setUrl($this->settings->get('publish_url'));
+            $button->setTarget('_blank');
+            $this->toolbar->addButtonInstance($button);
+        }
     }
 
 
@@ -90,6 +110,12 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
             case "exportContent":
                 $this->$cmd();
                 break;
+
+            case "updateApp":
+                $this->checkPublishPossible();
+                $this->$cmd();
+                break;
+
 
             default:
                 ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
@@ -201,6 +227,21 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
     }
 
     /**
+     * Export the content
+     * @throws ilDateTimeException
+     */
+    public function updateApp()
+    {
+        $this->plugin->includeClass('class.ilSwingAppPublish.php');
+        $publisher = new ilSwingAppPublish($this->parentObj);
+        //$publisher->buildContent();
+        $message = $publisher->publishApp();
+
+        ilUtil::sendSuccess($this->plugin->txt("app_updated") . '<br />' . $message, true);
+        $this->returnToExport();
+    }
+
+    /**
      * Check if the user has admin access and retorn with an error if not
      */
     public function checkAdminAccess()
@@ -209,6 +250,29 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
             ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
             $this->returnToObject();
         }
+    }
+
+    /**
+     * Check if the user has admin access and retorn with an error if not
+     */
+    public function checkPublishPossible()
+    {
+        if (!$this->isPublishPossible()
+        ) {
+            ilUtil::sendFailure($this->plugin->txt("build_not_possible"), true);
+            $this->returnToObject();
+        }
+    }
+
+    /**
+     * Check if the user has admin access and retorn with an error if not
+     */
+    protected function isPublishPossible()
+    {
+        return ($this->plugin->isBuildPossible() &&
+            is_dir($this->settings->get('publish_dir')) &&
+            is_writeable($this->settings->get('publish_dir'))
+        );
     }
 
     /**
@@ -225,6 +289,6 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
      */
     public function returnToObject()
     {
-        $this->ctrl->redirectToURL("goto.php?target=tst_".$this->parentObj->getRefId());
+        $this->ctrl->redirectToURL("goto.php?target=dcl_".$this->parentObj->getRefId());
     }
 }

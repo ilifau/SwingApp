@@ -16,11 +16,16 @@ class ilSwingAppPublish
     /** @var ilSwingAppPlugin */
 	protected $plugin;
 
+    /** @var  ilSwingAppConfig $config */
+    protected $config;
+
+    /** @var  ilSwingAppSettings  $settings*/
+    protected $settings;
+
     /** @var string */
-	protected $directory;
+    protected $directory;
 
-
-	/**
+    /**
 	 * Constructor.
 	 * @param ilObjDataCollection $object
 	 */
@@ -28,7 +33,8 @@ class ilSwingAppPublish
 	{
 		$this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'UIComponent', 'uihk', 'SwingApp');
 		$this->object = $object;
-
+        $this->config = $this->plugin->getConfig();
+        $this->settings = $this->plugin->getSettings($this->object->getId());
 		$this->directory = ilUtil::getDataDir()."/dcl_data"."/dcl_".$this->object->getId()."/content";
 	}
 
@@ -56,8 +62,6 @@ class ilSwingAppPublish
         $dictionary['units'] = $this->exportUnits();
         $dictionary['words'] = $this->exportWords();
         file_put_contents($this->directory.'/data/dictionary.json', json_encode($dictionary, JSON_PRETTY_PRINT));
-
-        $this->packContent();
     }
 
     /**
@@ -403,5 +407,96 @@ class ilSwingAppPublish
         $exp->create();
     }
 
+    /**
+     * Compile and publish the app with the new content
+     * @return string
+     */
+    public function publishApp() {
 
+        $curDir = getcwd();
+        $cmd = $this->config->get('build_command');
+        $baseDir = $this->config->get('build_base_dir');
+        $contentDir = $this->config->get('build_content_dir');
+        $resultDir = $this->config->get('build_result_dir');
+        $publishDir = $this->settings->get('publish_dir');
+
+//        foreach ([$baseDir, $contentDir, $resultDir, $publishDir] as $dir) {
+//            echo $dir . "<br />";
+//        }
+//        exit;
+
+        ilUtil::delDir($contentDir, true);
+        $this->rCopy($this->directory, $contentDir);
+
+        chdir($baseDir);
+        $output = [];
+        $retvar = [];
+        $message = exec($cmd, $output, $retvar);
+        chdir($curDir);
+
+        ilUtil::delDir($publishDir, true);
+        $this->rCopy($resultDir, $publishDir);
+
+        return implode('<br />', $output);
+    }
+
+    /**
+     * Copies content of a directory $a_sdir recursively to a directory $a_tdir
+     * @param	string	$a_sdir		source directory
+     * @param	string	$a_tdir		target directory
+     * @param 	boolean $preserveTimeAttributes	if true, ctime will be kept.
+     *
+     * @return	boolean	TRUE for sucess, FALSE otherwise
+     * @access	public
+     * @static
+     *
+     */
+    public function rCopy ($a_sdir, $a_tdir, $preserveTimeAttributes = false)
+    {
+        // check if arguments are directories
+        if (!@is_dir($a_sdir) or
+            !@is_dir($a_tdir))
+        {
+            return FALSE;
+        }
+
+        // read a_sdir, copy files and copy directories recursively
+        $dir = opendir($a_sdir);
+
+        while($file = readdir($dir))
+        {
+            if ($file != "." and
+                $file != "..")
+            {
+                // directories
+                if (@is_dir($a_sdir."/".$file))
+                {
+                    if (!@is_dir($a_tdir."/".$file))
+                    {
+                        if (!ilUtil::makeDir($a_tdir."/".$file))
+                            return FALSE;
+
+                        //chmod($a_tdir."/".$file, 0775);
+                    }
+
+                    if (!$this->rCopy($a_sdir."/".$file,$a_tdir."/".$file))
+                    {
+                        return FALSE;
+                    }
+                }
+
+                // files
+                if (@is_file($a_sdir."/".$file))
+                {
+                    if (!copy($a_sdir."/".$file,$a_tdir."/".$file))
+                    {
+                        return FALSE;
+                    }
+                    if ($preserveTimeAttributes)
+                        touch($a_tdir."/".$file, filectime($a_sdir."/".$file));
+                }
+            }
+        }
+        return TRUE;
+    }
 }

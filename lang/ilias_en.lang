@@ -19,9 +19,13 @@ build_content_dir#:#Content Directory for Build
 build_content_dir_info#:#Directory to which the content of the data collection is copied for the generation process of the app
 build_result_dir#:#Result Directory of Build
 build_result_dir_info#:#Directory in which the compiled app content is available after the build process
-settings_saved#:#The settings are saved..
-publish_settings#:#Publication Setings
+settings_saved#:#The settings are saved.
+publish_settings#:#Publication Settings
 publish_dir#:#Target Directory
 publish_dir_info#:#Directory to which the generated app is copied
 publish_url#:#Address
 publish_url_info#:#Web address of the published app
+open_app#:#Open App
+build_not_possible#:#Mit den vorhandenen Einstellungen ist keine App-Erzeugung möglich!
+update_app#:#Update App
+app_updated#:#The App is updated.

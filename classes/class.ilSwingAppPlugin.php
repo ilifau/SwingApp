@@ -68,6 +68,31 @@ class ilSwingAppPlugin extends ilUserInterfaceHookPlugin
 
 
     /**
+     * Check if a build is possible
+     * @return bool
+     */
+    public function isBuildPossible()
+    {
+        $this->getConfig();
+
+        $cmd = $this->config->get('build_command');
+        $baseDir = $this->config->get('build_base_dir');
+        $contentDir = $this->config->get('build_content_dir');
+        $resultDir = $this->config->get('build_result_dir');
+
+        if (empty($cmd)) {
+            return false;
+        }
+        foreach ([$baseDir, $contentDir, $resultDir] as $dir)
+
+        if (!is_dir($dir) && ! is_writable($dir)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
 	 * Get a user preference
 	 * @param string	$name
 	 * @param mixed		$default
