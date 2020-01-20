@@ -78,7 +78,12 @@ class ilSwingAppConfigGUI extends ilPluginConfigGUI
 	 */
 	protected function editConfiguration()
 	{
-		$form = $this->initConfigForm();
+        if (!$this->plugin->isBuildPossible()
+        ) {
+            ilUtil::sendInfo($this->plugin->txt("build_not_possible"), false);
+        }
+
+        $form = $this->initConfigForm();
 		$this->tpl->setContent($form->getHTML());
 	}
 

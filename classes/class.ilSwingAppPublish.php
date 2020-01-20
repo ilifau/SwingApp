@@ -25,6 +25,10 @@ class ilSwingAppPublish
     /** @var string */
     protected $directory;
 
+    /** @var string[] */
+    protected $buildLog = [];
+
+
     /**
 	 * Constructor.
 	 * @param ilObjDataCollection $object
@@ -409,7 +413,7 @@ class ilSwingAppPublish
 
     /**
      * Compile and publish the app with the new content
-     * @return string
+     * @return boolean
      */
     public function publishApp() {
 
@@ -429,15 +433,27 @@ class ilSwingAppPublish
         $this->rCopy($this->directory, $contentDir);
 
         chdir($baseDir);
-        $output = [];
-        $retvar = [];
-        $message = exec($cmd, $output, $retvar);
+        $retvar = 0;
+        exec($cmd, $this->buildLog, $retvar);
         chdir($curDir);
 
         ilUtil::delDir($publishDir, true);
         $this->rCopy($resultDir, $publishDir);
 
-        return implode('<br />', $output);
+        if (empty($retvar)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Get the log from the buld process
+     * @return array
+     */
+    public function getBuildLog() {
+        return $this->buildLog;
     }
 
     /**

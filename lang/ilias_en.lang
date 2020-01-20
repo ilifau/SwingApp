@@ -19,6 +19,7 @@ build_content_dir#:#Content Directory for Build
 build_content_dir_info#:#Directory to which the content of the data collection is copied for the generation process of the app
 build_result_dir#:#Result Directory of Build
 build_result_dir_info#:#Directory in which the compiled app content is available after the build process
+build_not_possible#:#The plugin configuration doesn't allow an update of apps!
 settings_saved#:#The settings are saved.
 publish_settings#:#Publication Settings
 publish_dir#:#Target Directory
@@ -26,6 +27,8 @@ publish_dir_info#:#Directory to which the generated app is copied
 publish_url#:#Address
 publish_url_info#:#Web address of the published app
 open_app#:#Open App
-build_not_possible#:#Mit den vorhandenen Einstellungen ist keine App-Erzeugung möglich!
+publish_not_possible#:#The settings don't allow an update of the app!
+confirm_update_app#:#Build and publish the app to %s ?<br />This will take approximately 5 minutes. Please keep the browser window open to get a success message when the process is finished.
 update_app#:#Update App
-app_updated#:#The App is updated.
+app_updated#:#The app is updated.
+app_update_failed#:#The update failed (see below).
