@@ -30,5 +30,9 @@ open_app#:#Open App
 publish_not_possible#:#The settings don't allow an update of the app!
 confirm_update_app#:#Build and publish the app to %s ?<br />This will take approximately 5 minutes. Please keep the browser window open to get a success message when the process is finished.
 update_app#:#Update App
+update_apps#:#Update Apps
 app_updated#:#The app is updated.
 app_update_failed#:#The update failed (see below).
+confirm_update_apps#:#Build and publish the apps? This will take approximately 5 minutes per app. Please keep the browser window open to get a success message when the process is finished.
+apps_updated#:#The update is finished.<br />Updated: %s <br/>Failed: %s
+none#:#none.

@@ -54,7 +54,6 @@ class ilSwingAppSettings extends ilSwingAppBaseData
             ilSwingAppParam::TYPE_TEXT,
             ''
         ));
-
     }
 
     /**
@@ -91,5 +90,34 @@ class ilSwingAppSettings extends ilSwingAppBaseData
                 array('param_value' => array('text', (string) $param->value))
             );
         }
+    }
+
+    /**
+     * Get a list of object titles which can be published
+     * @return array id => title
+     */
+    public static function getPublishableObjects()
+    {
+        global $DIC;
+        $ilDB = $DIC->database();
+
+        $query = "
+            SELECT s.obj_id, s.param_value, o.title
+            FROM swingapp_settings s
+            INNER JOIN object_data o ON o.obj_id = s.obj_id
+            WHERE s.param_name = 'publish_dir'
+            AND s.param_value IS NOT NULL AND s.param_value <> ''";
+
+        $result = $ilDB->query($query);
+
+        $objects = [];
+        while ($row = $ilDB->fetchAssoc($result)) {
+            if (is_dir($row['param_value']) &&
+                is_writeable($row['param_value'])) {
+                $objects[$row['obj_id']] = $row['title'];
+            }
+        }
+
+        return $objects;
     }
 }

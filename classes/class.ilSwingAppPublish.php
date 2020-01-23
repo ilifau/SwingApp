@@ -434,6 +434,7 @@ class ilSwingAppPublish
 
         chdir($baseDir);
         $retvar = 0;
+        $this->buildLog = [];
         exec($cmd, $this->buildLog, $retvar);
         chdir($curDir);
 

@@ -63,12 +63,15 @@ class ilSwingAppConfigGUI extends ilPluginConfigGUI
 		switch ($cmd)
 		{
 			case "saveConfiguration":
-				$this->saveConfiguration();
+            case "confirmUpdateApps":
+            case "updateApps":
+				$this->$cmd();
 				break;
 
 			case "configure":
 			default:
-				$this->editConfiguration();
+            $this->modifyConfigToolbar();
+            $this->editConfiguration();
 				break;
 		}
 	}
@@ -125,4 +128,77 @@ class ilSwingAppConfigGUI extends ilPluginConfigGUI
 
 		return $form;
 	}
+
+    /**
+     * Modify the export tab toolbar
+     */
+    public function modifyConfigToolbar()
+    {
+        if ($this->plugin->isBuildPossible()) {
+            $button = ilLinkButton::getInstance();
+            $button->setCaption($this->plugin->txt('update_apps'), false);
+            $button->setUrl($this->ctrl->getLinkTarget($this, 'confirmUpdateApps'));
+            $this->toolbar->addButtonInstance($button);
+        }
+
+    }
+
+    /**
+     * Confirm the update of apps
+     */
+    protected function confirmUpdateApps() {
+        $this->plugin->includeClass('class.ilSwingAppSettings.php');
+
+        $objects = ilSwingAppSettings::getPublishableObjects();
+
+        $gui = new ilConfirmationGUI;
+        $gui->setFormAction($this->ctrl->getFormAction($this));
+        foreach ($objects as $obj_id => $title) {
+            $gui->addItem('obj_ids[]', $obj_id, $title);
+        }
+        $gui->setHeaderText($this->plugin->txt('confirm_update_apps'));
+        $gui->setConfirm($this->plugin->txt('update_apps'), 'updateApps');
+        $gui->setCancel($this->lng->txt('cancel'), 'editConfiguration');
+
+        $this->tpl->setContent($gui->getHTML());
+    }
+
+    /**
+     *
+     */
+    protected function UpdateApps() {
+
+        $log = [];
+        $built = [];
+        $failed = [];
+
+        $obj_ids = $_POST['obj_ids'];
+        foreach ($obj_ids as $obj_id) {
+
+            $object = new ilObjDataCollection($obj_id, false);
+            $log[] = 'Publishing '. $object->getTitle();
+
+            $this->plugin->includeClass('class.ilSwingAppPublish.php');
+            $publisher = new ilSwingAppPublish($object);
+            $publisher->buildContent();
+            $success = $publisher->publishApp();
+            if ($success) {
+                $built[] = $object->getTitle();
+            }
+            else {
+                $failed[] = $object->getTitle();
+            }
+            $log = array_merge($log, $publisher->getBuildLog());
+        }
+
+        $info = '<pre class="small" style="height: 200px; overflow:scroll;">'.implode('<br />', $log).'</pre>';
+
+        $built = empty($built) ? [$this->plugin->txt('none')] : $built;
+        $failed = empty($failed) ? [$this->plugin->txt('none')] : $failed;
+
+        ilUtil::sendInfo(sprintf($this->plugin->txt("apps_updated"),
+                            implode(', ', $built), implode(', ', $failed)). $info, true);
+
+        $this->ctrl->redirect($this, 'editConfiguration');
+    }
 }
