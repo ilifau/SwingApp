@@ -431,6 +431,7 @@ class ilSwingAppPublish
 
         ilUtil::delDir($contentDir, true);
         $this->rCopy($this->directory, $contentDir);
+        $this->modifyIndex();
 
         chdir($baseDir);
         $retvar = 0;
@@ -447,6 +448,26 @@ class ilSwingAppPublish
         else {
             return false;
         }
+    }
+
+
+    /**
+     * Modify app title and language
+     */
+    public function modifyIndex()
+    {
+        $file = $this->config->get('build_base_dir') . '/src/index.html';
+
+        $html = file_get_contents($file);
+        $html = preg_replace('/<title>(.*)<\/title>/', '<title>'.$this->object->getDescription().'</title>', $html);
+
+        $texts = $this->exportGeneralTexts();
+        if (isset($texts['metaLanguage'])){
+            $lang = $texts['metaLanguage'];
+            $html = preg_replace('/<html lang="([a-z]*)">/', '<html lang="'.$lang.'">', $html);
+        }
+
+        file_put_contents($file, $html);
     }
 
     /**
