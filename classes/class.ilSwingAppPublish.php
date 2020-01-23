@@ -432,6 +432,7 @@ class ilSwingAppPublish
         ilUtil::delDir($contentDir, true);
         $this->rCopy($this->directory, $contentDir);
         $this->modifyIndex();
+        $this->modifyManifest();
 
         chdir($baseDir);
         $retvar = 0;
@@ -466,6 +467,20 @@ class ilSwingAppPublish
             $lang = $texts['metaLanguage'];
             $html = preg_replace('/<html lang="([a-z]*)">/', '<html lang="'.$lang.'">', $html);
         }
+
+        file_put_contents($file, $html);
+    }
+
+    /**
+     * Modify app title and language
+     */
+    public function modifyManifest()
+    {
+        $file = $this->config->get('build_base_dir') . '/src/manifest.webmanifest';
+
+        $html = file_get_contents($file);
+        $html = preg_replace('/"name": "(.*)"/', '"name": "'.$this->object->getDescription().'"', $html);
+        $html = preg_replace('/"short_name": "(.*)"/', '"short_name": "'.$this->object->getDescription().'"', $html);
 
         file_put_contents($file, $html);
     }
