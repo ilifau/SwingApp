@@ -93,6 +93,48 @@ class ilSwingAppPlugin extends ilUserInterfaceHookPlugin
     }
 
     /**
+     * Check if a build process is running
+     * @return bool
+     */
+    public function isBuildRunning()
+    {
+        $this->getConfig();
+        $running_since = $this->config->get('build_running_since');
+        return !empty($running_since);
+    }
+
+    /**
+     * Gert the message for a running build process
+     * @return string
+     */
+    public function getBuildRunningMessage()
+    {
+        $this->getConfig();
+        $running_since = $this->config->get('build_running_since');
+        return sprintf($this->txt('build_running_message'), $running_since);
+    }
+
+    /**
+     * Set the running status for the build process
+     * @param bool $running
+     * @throws ilDateTimeException
+     */
+    public function setBuildRunning($running = true)
+    {
+        $this->getConfig();
+
+        if ($running) {
+            $now = new ilDateTime(time(), IL_CAL_UNIX);
+            $this->config->set('build_running_since', $now->get(IL_CAL_DATETIME));
+        }
+        else {
+            $this->config->set('build_running_since', '');
+        }
+        $this->config->write();
+    }
+
+
+    /**
 	 * Get a user preference
 	 * @param string	$name
 	 * @param mixed		$default

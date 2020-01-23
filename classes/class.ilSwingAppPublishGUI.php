@@ -260,6 +260,11 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
      */
     protected function confirmUpdateApp()
     {
+        if ($this->plugin->isBuildRunning()) {
+            ilUtil::sendFailure($this->plugin->getBuildRunningMessage(), true);
+            $this->returnToExport();
+        }
+
         $url = $this->settings->get('publish_url');
         $link = '<a target="_blank" href="'.$url.'" >'.$url.'</a>';
 
@@ -282,9 +287,15 @@ class ilSwingAppPublishGUI extends ilSwingAppBaseGUI
         $this->plugin->includeClass('class.ilSwingAppPublish.php');
         $publisher = new ilSwingAppPublish($this->parentObj);
 
+        if ($this->plugin->isBuildRunning()) {
+            ilUtil::sendFailure($this->plugin->getBuildRunningMessage(), true);
+            $this->returnToExport();
+        }
+        $this->plugin->setBuildRunning(true);
         $publisher->buildContent();
         $success = $publisher->publishApp();
         $info = '<pre class="small" style="height: 200px; overflow:scroll;">'.implode('<br />', $publisher->getBuildLog()).'</pre>';
+        $this->plugin->setBuildRunning(false);
 
         if ($success) {
             ilUtil::sendSuccess($this->plugin->txt("app_updated") . $info, true);

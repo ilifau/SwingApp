@@ -36,3 +36,6 @@ app_update_failed#:#The update failed (see below).
 confirm_update_apps#:#Build and publish the apps? This will take approximately 5 minutes per app. Please keep the browser window open to get a success message when the process is finished.
 apps_updated#:#The update is finished.<br />Updated: %s <br/>Failed: %s
 none#:#none.
+build_running_since#:#Build Running Since
+build_running_since_info#:#There must be only one build process at the same time. A date in this field indicates that a process is running. Delete it if you are shure that it has stopped.
+build_running_message#:#There is a build process running since %s. Please wait until it is finished. If you think it has stopped already, contact the administrator.

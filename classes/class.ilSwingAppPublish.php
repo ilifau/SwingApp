@@ -424,11 +424,6 @@ class ilSwingAppPublish
         $resultDir = $this->config->get('build_result_dir');
         $publishDir = $this->settings->get('publish_dir');
 
-//        foreach ([$baseDir, $contentDir, $resultDir, $publishDir] as $dir) {
-//            echo $dir . "<br />";
-//        }
-//        exit;
-
         ilUtil::delDir($contentDir, true);
         $this->rCopy($this->directory, $contentDir);
         $this->modifyIndex();
@@ -504,7 +499,7 @@ class ilSwingAppPublish
      * @static
      *
      */
-    public function rCopy ($a_sdir, $a_tdir, $preserveTimeAttributes = false)
+    protected function rCopy ($a_sdir, $a_tdir, $preserveTimeAttributes = false)
     {
         // check if arguments are directories
         if (!@is_dir($a_sdir) or

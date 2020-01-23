@@ -147,6 +147,12 @@ class ilSwingAppConfigGUI extends ilPluginConfigGUI
      * Confirm the update of apps
      */
     protected function confirmUpdateApps() {
+
+        if ($this->plugin->isBuildRunning()) {
+            ilUtil::sendFailure($this->plugin->getBuildRunningMessage(), true);
+            $this->ctrl->redirect($this, 'editConfiguration');
+        }
+
         $this->plugin->includeClass('class.ilSwingAppSettings.php');
 
         $objects = ilSwingAppSettings::getPublishableObjects();
@@ -167,6 +173,13 @@ class ilSwingAppConfigGUI extends ilPluginConfigGUI
      *
      */
     protected function UpdateApps() {
+
+        if ($this->plugin->isBuildRunning()) {
+            ilUtil::sendFailure($this->plugin->getBuildRunningMessage(), true);
+            $this->ctrl->redirect($this, 'editConfiguration');
+        }
+
+        $this->plugin->setBuildRunning(true);
 
         $log = [];
         $built = [];
@@ -190,6 +203,8 @@ class ilSwingAppConfigGUI extends ilPluginConfigGUI
             }
             $log = array_merge($log, $publisher->getBuildLog());
         }
+
+        $this->plugin->setBuildRunning(false);
 
         $info = '<pre class="small" style="height: 200px; overflow:scroll;">'.implode('<br />', $log).'</pre>';
 

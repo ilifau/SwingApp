@@ -56,6 +56,15 @@ class ilSwingAppConfig extends ilSwingAppBaseData
             ''
         ));
 
+
+        $this->addParam( ilSwingAppParam::_create(
+            'build_running_since',
+            $this->plugin->txt('build_running_since'),
+            $this->plugin->txt('build_running_since_info'),
+            ilSwingAppParam::TYPE_TEXT,
+            ''
+        ));
+
     }
 
 
