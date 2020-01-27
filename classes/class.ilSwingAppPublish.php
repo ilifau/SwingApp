@@ -452,9 +452,10 @@ class ilSwingAppPublish
      */
     public function modifyIndex()
     {
-        $file = $this->config->get('build_base_dir') . '/src/index.html';
+        $template = $this->config->get('build_base_dir') . '/src/index.template';
+        $index =  $this->config->get('build_base_dir') . '/src/index.html';
 
-        $html = file_get_contents($file);
+        $html = file_get_contents($template);
         $html = preg_replace('/<title>(.*)<\/title>/', '<title>'.$this->object->getDescription().'</title>', $html);
 
         $texts = $this->exportGeneralTexts();
@@ -463,7 +464,7 @@ class ilSwingAppPublish
             $html = preg_replace('/<html lang="([a-z]*)">/', '<html lang="'.$lang.'">', $html);
         }
 
-        file_put_contents($file, $html);
+        file_put_contents($index, $html);
     }
 
     /**
@@ -471,13 +472,14 @@ class ilSwingAppPublish
      */
     public function modifyManifest()
     {
-        $file = $this->config->get('build_base_dir') . '/src/manifest.webmanifest';
+        $template = $this->config->get('build_base_dir') . '/src/manifest.template';
+        $manifest = $this->config->get('build_base_dir') . '/src/manifest.webmanifest';
 
-        $html = file_get_contents($file);
-        $html = preg_replace('/"name": "(.*)"/', '"name": "'.$this->object->getDescription().'"', $html);
-        $html = preg_replace('/"short_name": "(.*)"/', '"short_name": "'.$this->object->getDescription().'"', $html);
+        $json = json_decode(file_get_contents($template));
+        $json->name = $this->object->getDescription();
+        $json->short_name = $this->object->getDescription();
 
-        file_put_contents($file, $html);
+        file_put_contents($manifest, json_encode($json, JSON_PRETTY_PRINT));
     }
 
     /**
